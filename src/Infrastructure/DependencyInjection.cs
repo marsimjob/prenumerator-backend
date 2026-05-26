@@ -32,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<IUserRepository,         EfUserRepository>();
         services.AddScoped<IUnitOfWork,             UnitOfWork>();
         services.AddSingleton<IPasswordHasher,      PasswordHasher>();
+        services.AddScoped<IEmailService,           SendGridEmailService>();
 
         return services;
     }
