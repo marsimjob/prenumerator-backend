@@ -1,0 +1,22 @@
+# Build output
+bin/
+obj/
+logs/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Secrets
+.env
+
+# EF Core design-time scaffolding
+src/Infrastructure/Persistence/Migrations/*.Designer.cs
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/
