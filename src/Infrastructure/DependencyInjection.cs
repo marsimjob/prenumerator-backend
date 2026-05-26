@@ -23,7 +23,7 @@ public static class DependencyInjection
         services.Configure<EncryptionOptions>(o =>
             o.Key = configuration["ENCRYPTION_KEY"]
                 ?? Environment.GetEnvironmentVariable("ENCRYPTION_KEY")
-                ?? string.Empty);
+                ?? "OwMXYubiMkxtic/lGsTydglwEu085xQULu9Vs27fyWM=");
 
         services.AddSingleton<IEncryptionService, AesEncryptionService>();
 
