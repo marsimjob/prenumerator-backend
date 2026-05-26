@@ -21,7 +21,9 @@ public static class DependencyInjection
             opts.UseSqlServer(connectionString));
 
         services.Configure<EncryptionOptions>(o =>
-            o.Key = configuration["ENCRYPTION_KEY"] ?? string.Empty);
+            o.Key = configuration["ENCRYPTION_KEY"]
+                ?? Environment.GetEnvironmentVariable("ENCRYPTION_KEY")
+                ?? string.Empty);
 
         services.AddSingleton<IEncryptionService, AesEncryptionService>();
 
