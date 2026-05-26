@@ -31,8 +31,11 @@ public static class DependencyInjection
         services.AddScoped<ISubscriptionRepository, EfSubscriptionRepository>();
         services.AddScoped<IUserRepository,         EfUserRepository>();
         services.AddScoped<IUnitOfWork,             UnitOfWork>();
-        services.AddSingleton<IPasswordHasher,      PasswordHasher>();
-        services.AddScoped<IEmailService,           SendGridEmailService>();
+        services.AddSingleton<IPasswordHasher, PasswordHasher>();
+
+        var sendGridKey  = configuration["SENDGRID_API_KEY"]    ?? Environment.GetEnvironmentVariable("SENDGRID_API_KEY")    ?? "";
+        var sendGridFrom = configuration["SENDGRID_FROM_EMAIL"]  ?? Environment.GetEnvironmentVariable("SENDGRID_FROM_EMAIL") ?? "noreply@prenumerator.app";
+        services.AddScoped<IEmailService>(_ => new SendGridEmailService(sendGridKey, sendGridFrom));
 
         return services;
     }

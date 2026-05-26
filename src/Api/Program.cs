@@ -63,7 +63,8 @@ try
 
     app.MapGet("/health", (IConfiguration cfg) => Results.Ok(new {
         status = "ok",
-        encKeyLength = Convert.FromBase64String(cfg["ENCRYPTION_KEY"] ?? Environment.GetEnvironmentVariable("ENCRYPTION_KEY") ?? "").Length
+        hasSendGridKey = !string.IsNullOrEmpty(cfg["SENDGRID_API_KEY"] ?? Environment.GetEnvironmentVariable("SENDGRID_API_KEY")),
+        hasFromEmail   = !string.IsNullOrEmpty(cfg["SENDGRID_FROM_EMAIL"] ?? Environment.GetEnvironmentVariable("SENDGRID_FROM_EMAIL")),
     }));
 
     app.MapAuthEndpoints();
