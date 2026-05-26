@@ -1,4 +1,5 @@
 using Api.Endpoints.Auth;
+using Scalar.AspNetCore;
 using Api.Endpoints.Credentials;
 using Api.Endpoints.Groups;
 using Api.Endpoints.Subscriptions;
@@ -47,8 +48,8 @@ try
     app.UseCors();
     app.UseSerilogRequestLogging();
 
-    if (app.Environment.IsDevelopment())
-        app.MapOpenApi();
+    app.MapOpenApi();
+    app.MapScalarApiReference();
 
     app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
 
