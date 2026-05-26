@@ -32,7 +32,9 @@ try
     builder.Services.AddOpenApi();
     builder.Services.AddSignalR();
 
-    var corsOrigin = builder.Configuration["CORS_ORIGIN"] ?? "http://localhost:5173";
+    var corsOrigin = builder.Configuration["CORS_ORIGIN"]
+        ?? Environment.GetEnvironmentVariable("CORS_ORIGIN")
+        ?? "http://localhost:5173";
     builder.Services.AddCors(o => o.AddDefaultPolicy(p => p
         .WithOrigins(corsOrigin)
         .AllowAnyHeader()
