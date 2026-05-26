@@ -53,7 +53,7 @@ try
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Database.Migrate();
 
-        // Step 1: DDL changes — add/drop columns and indexes
+        // Each call is a separate SQL batch — avoids compile-time column errors.
         db.Database.ExecuteSqlRaw(@"
             IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Users_Username' AND object_id = OBJECT_ID('Users'))
                 DROP INDEX IX_Users_Username ON Users;
@@ -68,13 +68,10 @@ try
             IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE Name = 'VerificationCodeExpiry' AND Object_ID = OBJECT_ID('Users'))
                 ALTER TABLE Users ADD VerificationCodeExpiry datetime2 NULL;
         ");
-
-        // Step 2: Data fix and index — runs after columns exist
-        db.Database.ExecuteSqlRaw(@"
-            EXEC sp_executesql N'UPDATE Users SET Email = CONCAT(''legacy_'', CAST(Id AS NVARCHAR(36)), ''@placeholder.invalid'') WHERE Email = ''''';
-            IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Users_Email' AND object_id = OBJECT_ID('Users'))
-                CREATE UNIQUE INDEX IX_Users_Email ON Users (Email);
-        ");
+        db.Database.ExecuteSqlRaw(
+            "UPDATE Users SET Email = CONCAT('legacy_', CAST(Id AS NVARCHAR(36)), '@placeholder.invalid') WHERE Email = ''");
+        db.Database.ExecuteSqlRaw(
+            "IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Users_Email' AND object_id = OBJECT_ID('Users')) CREATE UNIQUE INDEX IX_Users_Email ON Users (Email)");
     }
 
     app.UseCors();
