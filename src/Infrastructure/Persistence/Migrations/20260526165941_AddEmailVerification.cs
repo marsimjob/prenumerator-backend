@@ -11,50 +11,31 @@ namespace Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropIndex(
-                name: "IX_Users_Username",
-                table: "Users");
+            // Idempotent: works regardless of how far a previous attempt got.
+            migrationBuilder.Sql(@"
+                IF EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Users_Username' AND object_id = OBJECT_ID('Users'))
+                    DROP INDEX IX_Users_Username ON Users;
 
-            migrationBuilder.DropColumn(
-                name: "Username",
-                table: "Users");
+                IF EXISTS (SELECT 1 FROM sys.columns WHERE Name = 'Username' AND Object_ID = OBJECT_ID('Users'))
+                    ALTER TABLE Users DROP COLUMN Username;
 
-            migrationBuilder.AddColumn<string>(
-                name: "Email",
-                table: "Users",
-                type: "nvarchar(256)",
-                maxLength: 256,
-                nullable: false,
-                defaultValue: "");
+                IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE Name = 'Email' AND Object_ID = OBJECT_ID('Users'))
+                    ALTER TABLE Users ADD Email nvarchar(256) NOT NULL DEFAULT '';
 
-            migrationBuilder.AddColumn<bool>(
-                name: "IsEmailVerified",
-                table: "Users",
-                type: "bit",
-                nullable: false,
-                defaultValue: false);
+                IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE Name = 'IsEmailVerified' AND Object_ID = OBJECT_ID('Users'))
+                    ALTER TABLE Users ADD IsEmailVerified bit NOT NULL DEFAULT 0;
 
-            migrationBuilder.AddColumn<string>(
-                name: "VerificationCode",
-                table: "Users",
-                type: "nvarchar(8)",
-                maxLength: 8,
-                nullable: true);
+                IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE Name = 'VerificationCode' AND Object_ID = OBJECT_ID('Users'))
+                    ALTER TABLE Users ADD VerificationCode nvarchar(8) NULL;
 
-            migrationBuilder.AddColumn<DateTime>(
-                name: "VerificationCodeExpiry",
-                table: "Users",
-                type: "datetime2",
-                nullable: true);
+                IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE Name = 'VerificationCodeExpiry' AND Object_ID = OBJECT_ID('Users'))
+                    ALTER TABLE Users ADD VerificationCodeExpiry datetime2 NULL;
 
-            // Give any existing rows a unique placeholder so the unique index doesn't fail.
-            migrationBuilder.Sql("UPDATE Users SET Email = CONCAT('legacy_', CAST(Id AS NVARCHAR(36)), '@placeholder.invalid') WHERE Email = ''");
+                UPDATE Users SET Email = CONCAT('legacy_', CAST(Id AS NVARCHAR(36)), '@placeholder.invalid') WHERE Email = '';
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Users_Email",
-                table: "Users",
-                column: "Email",
-                unique: true);
+                IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Users_Email' AND object_id = OBJECT_ID('Users'))
+                    CREATE UNIQUE INDEX IX_Users_Email ON Users (Email);
+            ");
         }
 
         /// <inheritdoc />

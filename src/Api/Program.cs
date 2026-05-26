@@ -54,8 +54,8 @@ try
         db.Database.Migrate();
     }
 
-    app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseCors();
+    app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseSerilogRequestLogging();
 
     app.MapOpenApi();
