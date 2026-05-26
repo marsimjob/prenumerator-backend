@@ -61,7 +61,10 @@ try
     app.MapOpenApi();
     app.MapScalarApiReference();
 
-    app.MapGet("/health", () => Results.Ok(new { status = "ok" }));
+    app.MapGet("/health", (IConfiguration cfg) => Results.Ok(new {
+        status = "ok",
+        encKeyLength = Convert.FromBase64String(cfg["ENCRYPTION_KEY"] ?? Environment.GetEnvironmentVariable("ENCRYPTION_KEY") ?? "").Length
+    }));
 
     app.MapAuthEndpoints();
     app.MapGroupEndpoints();
