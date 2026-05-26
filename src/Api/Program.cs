@@ -36,7 +36,7 @@ try
         ?? Environment.GetEnvironmentVariable("CORS_ORIGIN")
         ?? "http://localhost:5173";
     builder.Services.AddCors(o => o.AddDefaultPolicy(p => p
-        .WithOrigins(corsOrigin)
+        .WithOrigins(corsOrigin, "https://thriving-hamster-3df49e.netlify.app")
         .AllowAnyHeader()
         .AllowAnyMethod()
         .AllowCredentials()));
