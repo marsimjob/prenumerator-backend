@@ -48,6 +48,9 @@ public static class AuthEndpoints
     private static async Task<IResult> Login(
         LoginRequest req, ISender sender, CancellationToken ct)
     {
+        if (string.IsNullOrWhiteSpace(req.Email))
+            return Results.Unauthorized();
+
         var result = await sender.Send(new LoginCommand(req.Email, req.Password), ct);
         if (!result.IsSuccess)
         {
