@@ -1,4 +1,6 @@
 using Api.Endpoints.Auth;
+using Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 using Scalar.AspNetCore;
 using Api.Endpoints.Credentials;
 using Api.Endpoints.Groups;
@@ -43,6 +45,12 @@ try
     builder.Services.AddScoped<IFeedNotifier, SignalRFeedNotifier>();
 
     var app = builder.Build();
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.Migrate();
+    }
 
     app.UseMiddleware<ExceptionHandlingMiddleware>();
     app.UseCors();
