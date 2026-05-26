@@ -47,6 +47,9 @@ namespace Infrastructure.Persistence.Migrations
                 type: "datetime2",
                 nullable: true);
 
+            // Give any existing rows a unique placeholder so the unique index doesn't fail.
+            migrationBuilder.Sql("UPDATE Users SET Email = CONCAT('legacy_', CAST(Id AS NVARCHAR(36)), '@placeholder.invalid') WHERE Email = ''");
+
             migrationBuilder.CreateIndex(
                 name: "IX_Users_Email",
                 table: "Users",
