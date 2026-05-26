@@ -15,8 +15,10 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
+        var connectionString = configuration.GetConnectionString("CONNECTION_STRING")
+            ?? configuration["CONNECTION_STRING"];
         services.AddDbContext<AppDbContext>(opts =>
-            opts.UseSqlServer(configuration["CONNECTION_STRING"]));
+            opts.UseSqlServer(connectionString));
 
         services.Configure<EncryptionOptions>(o =>
             o.Key = configuration["ENCRYPTION_KEY"] ?? string.Empty);
