@@ -88,12 +88,18 @@ try
     app.MapOpenApi();
     app.MapScalarApiReference();
 
-    app.MapGet("/health", (IConfiguration cfg) => Results.Ok(new {
-        status = startupError == null ? "ok" : "degraded",
-        startupError,
-        hasSendGridKey = !string.IsNullOrEmpty(cfg["SENDGRID_API_KEY"] ?? Environment.GetEnvironmentVariable("SENDGRID_API_KEY")),
-        hasFromEmail   = !string.IsNullOrEmpty(cfg["SENDGRID_FROM_EMAIL"] ?? Environment.GetEnvironmentVariable("SENDGRID_FROM_EMAIL")),
-    }));
+    app.MapGet("/health", (IConfiguration cfg) =>
+    {
+        var cs = cfg.GetConnectionString("CONNECTION_STRING") ?? cfg["CONNECTION_STRING"];
+        var csPreview = cs == null ? "NOT SET" : cs[..Math.Min(80, cs.Length)];
+        return Results.Ok(new {
+            status = startupError == null ? "ok" : "degraded",
+            startupError,
+            connectionStringPreview = csPreview,
+            hasSendGridKey = !string.IsNullOrEmpty(cfg["SENDGRID_API_KEY"] ?? Environment.GetEnvironmentVariable("SENDGRID_API_KEY")),
+            hasFromEmail   = !string.IsNullOrEmpty(cfg["SENDGRID_FROM_EMAIL"] ?? Environment.GetEnvironmentVariable("SENDGRID_FROM_EMAIL")),
+        });
+    });
 
     app.MapAuthEndpoints();
     app.MapGroupEndpoints();
