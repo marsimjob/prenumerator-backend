@@ -48,10 +48,8 @@ try
 
     var app = builder.Build();
 
-    string? startupError = null;
-    try
+    using (var scope = app.Services.CreateScope())
     {
-        using var scope = app.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Database.Migrate();
 
@@ -75,11 +73,6 @@ try
         db.Database.ExecuteSqlRaw(
             "IF NOT EXISTS (SELECT 1 FROM sys.indexes WHERE name = 'IX_Users_Email' AND object_id = OBJECT_ID('Users')) CREATE UNIQUE INDEX IX_Users_Email ON Users (Email)");
     }
-    catch (Exception ex)
-    {
-        startupError = $"{ex.GetType().Name}: {ex.Message}\n\nInner: {ex.InnerException?.Message}\n\nStack:\n{ex.StackTrace}";
-        Log.Error(ex, "Startup migration failed");
-    }
 
     app.UseCors();
     app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -88,18 +81,11 @@ try
     app.MapOpenApi();
     app.MapScalarApiReference();
 
-    app.MapGet("/health", (IConfiguration cfg) =>
-    {
-        var cs = cfg.GetConnectionString("CONNECTION_STRING") ?? cfg["CONNECTION_STRING"];
-        var csPreview = cs == null ? "NOT SET" : cs[..Math.Min(80, cs.Length)];
-        return Results.Ok(new {
-            status = startupError == null ? "ok" : "degraded",
-            startupError,
-            connectionStringPreview = csPreview,
-            hasSendGridKey = !string.IsNullOrEmpty(cfg["SENDGRID_API_KEY"] ?? Environment.GetEnvironmentVariable("SENDGRID_API_KEY")),
-            hasFromEmail   = !string.IsNullOrEmpty(cfg["SENDGRID_FROM_EMAIL"] ?? Environment.GetEnvironmentVariable("SENDGRID_FROM_EMAIL")),
-        });
-    });
+    app.MapGet("/health", (IConfiguration cfg) => Results.Ok(new {
+        status = "ok",
+        hasSendGridKey = !string.IsNullOrEmpty(cfg["SENDGRID_API_KEY"] ?? Environment.GetEnvironmentVariable("SENDGRID_API_KEY")),
+        hasFromEmail   = !string.IsNullOrEmpty(cfg["SENDGRID_FROM_EMAIL"] ?? Environment.GetEnvironmentVariable("SENDGRID_FROM_EMAIL")),
+    }));
 
     app.MapAuthEndpoints();
     app.MapGroupEndpoints();
